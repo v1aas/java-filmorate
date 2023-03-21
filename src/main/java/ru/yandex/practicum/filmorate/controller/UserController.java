@@ -54,7 +54,7 @@ public class UserController {
             log.error("Ошибка логина");
             throw new ValidationException("логин не может быть пустым и содержать пробелы");
         }
-        if (user.getName()==null) {
+        if (user.getName()==null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
