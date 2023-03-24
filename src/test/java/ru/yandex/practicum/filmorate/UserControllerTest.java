@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -24,7 +23,7 @@ public class UserControllerTest {
 
     @Test
     public void twoUsersInList() {
-        userController.getUsers().add(user);
+        userController.postUser(user);
         User user2 = new User(2, "Myf2ilm@mal.ru", "Des2cript", "Ni2ck",
                 LocalDate.of(2004, 12, 18));
         try {

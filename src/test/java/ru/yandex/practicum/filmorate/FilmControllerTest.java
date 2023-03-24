@@ -23,8 +23,8 @@ public class FilmControllerTest {
 
     @Test
     public void twoFilmsInList() {
-        filmController.getFilms().add(film);
-        Film film2 = new Film(2, "My film", "Descript",
+        filmController.postFilm(film);
+        Film film2 = new Film(1, "My film", "Descript",
                 LocalDate.of(2021, 1, 12), 20);
         try {
             filmController.postFilm(film2);

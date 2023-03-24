@@ -7,58 +7,51 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class FilmController {
+    final static int MAX_LENGTH_DESCRIPTION = 200;
     private final static Logger log = LoggerFactory.getLogger(FilmController.class);
-    private List<Film> films = new ArrayList<>();
+    private Map<Integer,Film> films = new HashMap<>();
     private LocalDate birthdayFilms = LocalDate.of(1895, 12, 28);
-    private int id = 0; // Вообще в тз не прописано, чтоб мы что-то делали с логикой, однако для прохождения тестов
-    // я решил сделать простенький генератор айди
+    private int id = 0;
 
     @GetMapping("/films")
-    public List<Film> getFilms() {
+    public Map<Integer,Film> getFilms() {
         return films;
     }
 
     @PostMapping("/films")
-    public Film postFilm(@RequestBody Film film) throws ValidationException {
+    public Film postFilm(@RequestBody Film film) {
         validationFilm(film);
         film.setId(++id);
-        films.add(film);
+        films.put(id, film);
         return film;
     }
 
     @PutMapping("/films")
-    public Film putFilm(@RequestBody Film film) throws ValidationException {
+    public Film putFilm(@RequestBody Film film) {
         validationFilm(film);
-        for (Film film1 : films) {
-            if (film1.getId() == film.getId()) {
-                films.remove(film1);
-                films.add(film);
-                return film;
-            }
+        if (films.containsKey(film.getId())) {
+            films.put(film.getId(), film);
+            return film;
         }
         throw new ValidationException("Такого фильма нет");
     }
 
-    public void validationFilm(Film film) throws ValidationException {
+    private void validationFilm(Film film) {
         if (film.getName().isEmpty()) {
-            log.error("Ошибка названия");
             throw new ValidationException("Фильм должен иметь название");
         }
-        if (film.getDescription().getBytes().length > 200) {
-            log.error("Ошибка описания");
+        if (film.getDescription().getBytes().length > MAX_LENGTH_DESCRIPTION) {
             throw new ValidationException("Максимальная длина описания - 200 символов");
         }
         if (film.getReleaseDate().isBefore(birthdayFilms)) {
-            log.error("Ошибка даты");
             throw new ValidationException("Дата релиза должна быть позже!");
         }
         if (film.getDuration() < 0) {
-            log.error("Ошибка продолжительности");
             throw new ValidationException("Продолжительность должна быть положительной");
         }
     }
