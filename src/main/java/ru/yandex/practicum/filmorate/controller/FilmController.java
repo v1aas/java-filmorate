@@ -1,26 +1,25 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 public class FilmController {
     final static int MAX_LENGTH_DESCRIPTION = 200;
-    private final static Logger log = LoggerFactory.getLogger(FilmController.class);
     private Map<Integer,Film> films = new HashMap<>();
-    private LocalDate birthdayFilms = LocalDate.of(1895, 12, 28);
+    private final LocalDate birthdayFilms = LocalDate.of(1895, 12, 28);
     private int id = 0;
 
     @GetMapping("/films")
-    public Map<Integer,Film> getFilms() {
-        return films;
+    public List<Film> getFilms() {
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping("/films")
