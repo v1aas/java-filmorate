@@ -36,8 +36,8 @@ public class FilmService {
 
     // TODO проверить на работоспособность, а именно возврат списка и существование фильмов с одинаков кол-во лайков
     public List<Film> getPopularFilms(Integer count) {
-        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getQuantityLikes).
-                thenComparing(Film::getId).reversed());
+        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getQuantityLikes)
+                .thenComparing(Film::getId).reversed());
         popularFilms.addAll(filmStorage.getFilms());
         return new ArrayList<Film>(popularFilms.stream().limit(count).collect(Collectors.toList()));
     }
