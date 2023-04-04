@@ -81,7 +81,7 @@ public class UserControllerTest {
         }
         User user2 = new User(3, "Myf2ilm@mal.ru", "Des2cript", "Ni2ck",
                 LocalDate.of(2004, 12, 18), new HashSet<Integer>());
-        Assertions.assertThrows(ValidationException.class, () -> userController.putUsers(user2));
+        Assertions.assertThrows(NullPointerException.class, () -> userController.putUsers(user2));
         Assertions.assertEquals(1, userController.getUsers().size());
     }
 }

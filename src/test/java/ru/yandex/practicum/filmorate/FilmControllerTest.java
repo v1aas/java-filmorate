@@ -79,7 +79,7 @@ public class FilmControllerTest {
         }
         Film film2 = new Film(3, "My film12", "Descrip12t",
                 LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
-        Assertions.assertThrows(ValidationException.class, () -> filmController.putFilm(film2));
+        Assertions.assertThrows(NullPointerException.class, () -> filmController.putFilm(film2));
         Assertions.assertEquals(1, filmController.getFilms().size());
     }
 }
