@@ -14,8 +14,8 @@ import java.util.Set;
 
 @RestController
 public class UserController {
-    private InMemoryUserStorage userStorage;
-    private UserService userService;
+    private final InMemoryUserStorage userStorage;
+    private final UserService userService;
 
     @Autowired
     public UserController(InMemoryUserStorage userStorage) {

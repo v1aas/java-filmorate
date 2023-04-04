@@ -27,7 +27,7 @@ public class Film {
         likes.remove(id);
     }
 
-    public int getQuantityLikes(){
+    public int getQuantityLikes() {
         return likes.size();
     }
 }
