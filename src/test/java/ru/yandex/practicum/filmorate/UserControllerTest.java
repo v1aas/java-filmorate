@@ -6,26 +6,28 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 public class UserControllerTest {
 
     User user;
 
-    UserController userController = new UserController();
+    UserController userController = new UserController(new InMemoryUserStorage());
 
     @BeforeEach
     public void BeforeEach() {
         user = new User(1, "Myfilm@mal.ru", "Descript", "Nick",
-                LocalDate.of(2001, 12, 18));
+                LocalDate.of(2001, 12, 18), new HashSet<Integer>());
     }
 
     @Test
     public void twoUsersInList() {
         userController.postUser(user);
         User user2 = new User(2, "Myf2ilm@mal.ru", "Des2cript", "Ni2ck",
-                LocalDate.of(2004, 12, 18));
+                LocalDate.of(2004, 12, 18), new HashSet<Integer>());
         try {
             userController.postUser(user2);
             Assertions.assertEquals(2, userController.getUsers().size());
@@ -78,7 +80,7 @@ public class UserControllerTest {
             throw new RuntimeException(e);
         }
         User user2 = new User(3, "Myf2ilm@mal.ru", "Des2cript", "Ni2ck",
-                LocalDate.of(2004, 12, 18));
+                LocalDate.of(2004, 12, 18), new HashSet<Integer>());
         Assertions.assertThrows(ValidationException.class, () -> userController.putUsers(user2));
         Assertions.assertEquals(1, userController.getUsers().size());
     }

@@ -6,26 +6,28 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 public class FilmControllerTest {
 
     Film film;
 
-    FilmController filmController = new FilmController();
+    FilmController filmController = new FilmController(new InMemoryFilmStorage());
 
     @BeforeEach
     public void BeforeEach() {
         film = new Film(1, "My film", "Descript",
-                LocalDate.of(2021, 1, 12), 20);
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
     }
 
     @Test
     public void twoFilmsInList() {
         filmController.postFilm(film);
         Film film2 = new Film(1, "My film", "Descript",
-                LocalDate.of(2021, 1, 12), 20);
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
         try {
             filmController.postFilm(film2);
             Assertions.assertEquals(2, filmController.getFilms().size());
@@ -76,7 +78,7 @@ public class FilmControllerTest {
             throw new RuntimeException(e);
         }
         Film film2 = new Film(3, "My film12", "Descrip12t",
-                LocalDate.of(2021, 1, 12), 20);
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
         Assertions.assertThrows(ValidationException.class, () -> filmController.putFilm(film2));
         Assertions.assertEquals(1, filmController.getFilms().size());
     }
