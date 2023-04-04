@@ -18,7 +18,7 @@ public class UserControllerTest {
     UserController userController = new UserController(new InMemoryUserStorage());
 
     @BeforeEach
-    public void BeforeEach() {
+    public void beforeEach() {
         user = new User(1, "Myfilm@mal.ru", "Descript", "Nick",
                 LocalDate.of(2001, 12, 18), new HashSet<Integer>());
     }
@@ -37,7 +37,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void IncorrectEmail() {
+    public void incorrectEmail() {
         user.setEmail("");
         Assertions.assertThrows(ValidationException.class, () -> userController.postUser(user));
         user.setEmail("MyFilm.ru");
@@ -46,7 +46,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void IncorrectLogin() {
+    public void incorrectLogin() {
         user.setLogin("");
         Assertions.assertThrows(ValidationException.class, () -> userController.postUser(user));
         user.setLogin("Nick NAme");
@@ -55,7 +55,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void NullName() {
+    public void nullName() {
         user.setName("");
         try {
             userController.postUser(user);
@@ -66,14 +66,14 @@ public class UserControllerTest {
     }
 
     @Test
-    public void OldReleaseDate() {
+    public void oldReleaseDate() {
         user.setBirthday(LocalDate.of(2101, 1, 1));
         Assertions.assertThrows(ValidationException.class, () -> userController.postUser(user));
         Assertions.assertEquals(0, userController.getUsers().size());
     }
 
     @Test
-    public void PutIncorrectUser() {
+    public void putIncorrectUser() {
         try {
             userController.postUser(user);
         } catch (ValidationException e) {

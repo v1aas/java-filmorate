@@ -18,7 +18,7 @@ public class FilmControllerTest {
     FilmController filmController = new FilmController(new InMemoryFilmStorage());
 
     @BeforeEach
-    public void BeforeEach() {
+    public void beforeEach() {
         film = new Film(1, "My film", "Descript",
                 LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
     }
@@ -50,28 +50,28 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void NoNameFilm() {
+    public void noNameFilm() {
         film.setName("");
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void MinusDurationFilm() {
+    public void minusDurationFilm() {
         film.setDuration(-5);
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void OldReleaseDate() {
+    public void oldReleaseDate() {
         film.setReleaseDate(LocalDate.of(1001, 1, 1));
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void PutIncorrectFilm() {
+    public void putIncorrectFilm() {
         try {
             filmController.postFilm(film);
         } catch (ValidationException e) {
