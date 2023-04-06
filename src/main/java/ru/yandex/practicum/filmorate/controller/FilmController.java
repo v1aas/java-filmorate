@@ -20,7 +20,7 @@ public class FilmController {
     @Autowired
     public FilmController(InMemoryFilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
-        this.filmService = filmService; // TODO возможно ошибка здесь
+        this.filmService = filmService;
     }
 
     @GetMapping("/films")
