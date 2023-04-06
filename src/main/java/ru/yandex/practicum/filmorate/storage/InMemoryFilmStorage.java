@@ -31,8 +31,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
+
+
     @Override
-    public Film postFilm(Film film) {
+    public Film createFilm(Film film) {
         validationFilm(film);
         film.setId(++id);
         films.put(id, film);
@@ -40,7 +42,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film putFilm(Film film) {
+    public Film updateFilm(Film film) {
         validationFilm(film);
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);

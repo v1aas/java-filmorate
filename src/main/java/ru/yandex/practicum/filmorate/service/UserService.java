@@ -13,16 +13,13 @@ import java.util.Set;
 @Service
 public class UserService {
 
-    UserStorage userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    /* Опять ТЗ немного противоречит :)
-    В подсказке сказано, список друзей можно сделать через Set<Long>,
-    а потом просят вернуть список пользователей, поэтому совместил всё*/
     public List<User> getFriendList(int id) {
         List<User> userList = new ArrayList<>();
         for (Integer userId : userStorage.getUser(id).getFriendList()) {
@@ -35,8 +32,7 @@ public class UserService {
         if (userStorage.getUser(friendId) == null || userStorage.getUser(id) == null) {
             throw new NullPointerException("Такого пользователя нет");
         } else {
-            userStorage.getUser(id).addFriend(friendId);
-            userStorage.getUser(friendId).addFriend(id);
+            userStorage.addFriend(id, friendId);
         }
     }
 
@@ -44,8 +40,7 @@ public class UserService {
         if (userStorage.getUser(friendId) == null || userStorage.getUser(id) == null) {
             throw new NullPointerException("Такого пользователя нет");
         } else {
-            userStorage.getUsers().get(id).deleteFriend(friendId);
-            userStorage.getUsers().get(friendId).deleteFriend(id);
+            userStorage.deleteFriend(id, friendId);
         }
     }
 

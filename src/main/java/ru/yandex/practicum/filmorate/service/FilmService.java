@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
-    FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage) {
@@ -34,7 +34,6 @@ public class FilmService {
         }
     }
 
-    // TODO проверить на работоспособность, а именно возврат списка и существование фильмов с одинаков кол-во лайков
     public List<Film> getPopularFilms(Integer count) {
         Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getQuantityLikes)
                 .thenComparing(Film::getId).reversed());

@@ -8,19 +8,20 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Set;
 
 @RestController
 public class UserController {
-    private final InMemoryUserStorage userStorage;
+    private final UserStorage userStorage;
     private final UserService userService;
 
     @Autowired
-    public UserController(InMemoryUserStorage userStorage) {
+    public UserController(InMemoryUserStorage userStorage, UserService userService) {
         this.userStorage = userStorage;
-        this.userService = new UserService(userStorage);
+        this.userService = userService;
     }
 
     @GetMapping("/users")
@@ -45,13 +46,13 @@ public class UserController {
 
     @PostMapping("/users")
     public User postUser(@RequestBody User user) {
-        userStorage.postUser(user);
+        userStorage.createUser(user);
         return user;
     }
 
     @PutMapping("/users")
     public User putUsers(@RequestBody User user) {
-        userStorage.putUsers(user);
+        userStorage.updateUsers(user);
         return user;
     }
 

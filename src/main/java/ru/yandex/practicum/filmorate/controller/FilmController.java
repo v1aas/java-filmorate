@@ -7,19 +7,20 @@ import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.List;
 
 @RestController
 public class FilmController {
-    private InMemoryFilmStorage filmStorage;
+    private FilmStorage filmStorage;
     private FilmService filmService;
 
     @Autowired
-    public FilmController(InMemoryFilmStorage filmStorage) {
+    public FilmController(InMemoryFilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
-        this.filmService = new FilmService(filmStorage);
+        this.filmService = filmService; // TODO возможно ошибка здесь
     }
 
     @GetMapping("/films")
@@ -39,13 +40,13 @@ public class FilmController {
 
     @PostMapping("/films")
     public Film postFilm(@RequestBody Film film) {
-        filmStorage.postFilm(film);
+        filmStorage.createFilm(film);
         return film;
     }
 
     @PutMapping("/films")
     public Film putFilm(@RequestBody Film film) {
-        filmStorage.putFilm(film);
+        filmStorage.updateFilm(film);
         return film;
     }
 

@@ -30,16 +30,28 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User postUser(User user) {
-        validationUser(user);
+    public void addFriend(int id, int friendId) {
+        users.get(id).addFriend(friendId);
+        users.get(friendId).addFriend(id);
+    }
+
+    @Override
+    public void deleteFriend(int id, int friendId) {
+        users.get(id).deleteFriend(friendId);
+        users.get(friendId).deleteFriend(id);
+    }
+
+    @Override
+    public User createUser(User user) {
+        validateUser(user);
         user.setId(++id);
         users.put(id, user);
         return user;
     }
 
     @Override
-    public User putUsers(User user) {
-        validationUser(user);
+    public User updateUsers(User user) {
+        validateUser(user);
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
             return user;
@@ -48,7 +60,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void validationUser(User user) {
+    public void validateUser(User user) {
         if (user.getEmail().isEmpty() || !(user.getEmail().contains("@"))) {
             throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @");
         }

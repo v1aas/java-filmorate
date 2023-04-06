@@ -10,9 +10,9 @@ public interface FilmStorage {
 
     Film getFilm(int id);
 
-    Film postFilm(Film film);
+    Film createFilm(Film film);
 
-    Film putFilm(Film film);
+    Film updateFilm(Film film);
 
     void validationFilm(Film film);
 }

@@ -10,9 +10,12 @@ public interface UserStorage {
 
     User getUser(int id);
 
-    User postUser(User user);
+    User createUser(User user);
 
-    User putUsers(User user);
+    User updateUsers(User user);
+    void addFriend(int id, int friendId);
 
-    void validationUser(User user);
+    void deleteFriend(int id, int friendId);
+
+    void validateUser(User user);
 }
