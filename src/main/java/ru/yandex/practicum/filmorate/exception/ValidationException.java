@@ -8,7 +8,7 @@ public class ValidationException extends RuntimeException {
         log.error(message);
     }
 
-    public ValidationException() {
-        super();
+    public String getMessage() {
+        return "Некорректно введены данные!";
     }
 }

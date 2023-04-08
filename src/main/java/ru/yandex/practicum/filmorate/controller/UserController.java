@@ -1,55 +1,82 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @RestController
 public class UserController {
-    private Map<Integer, User> users = new HashMap<>();
-    private int id = 0;
+    private final UserStorage userStorage;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(InMemoryUserStorage userStorage, UserService userService) {
+        this.userStorage = userStorage;
+        this.userService = userService;
+    }
 
     @GetMapping("/users")
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return userStorage.getUsers();
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable int id) {
+        return userStorage.getUser(id);
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getFriendList(@PathVariable int id) {
+        return userService.getFriendList(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{friendId}")
+    public List<User> getCommonFriendList(@PathVariable int id, @PathVariable int friendId) {
+        return userService.getCommonFriendList(id, friendId);
     }
 
     @PostMapping("/users")
     public User postUser(@RequestBody User user) {
-        validationUser(user);
-        user.setId(++id);
-        users.put(id, user);
+        userStorage.createUser(user);
         return user;
     }
 
     @PutMapping("/users")
     public User putUsers(@RequestBody User user) {
-        validationUser(user);
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            return user;
-        }
-        throw new ValidationException("Такого пользователя нет");
+        userStorage.updateUsers(user);
+        return user;
     }
 
-    private void validationUser(User user) throws ValidationException {
-        if (user.getEmail().isEmpty() || !(user.getEmail().contains("@"))) {
-            throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
-            throw new ValidationException("логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("дата рождения не может быть в будущем");
-        }
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public Set<Integer> addFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.addFriend(id, friendId);
+        return userStorage.getUser(id).getFriendList();
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public Set<Integer> deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.deleteFriend(id, friendId);
+        return userStorage.getUsers().get(id).getFriendList();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse validationExp(final ValidationException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse nullExp(final NullPointerException e) {
+        return new ErrorResponse(e.getMessage());
     }
 }

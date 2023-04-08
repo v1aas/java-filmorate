@@ -6,26 +6,30 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 public class FilmControllerTest {
 
     Film film;
 
-    FilmController filmController = new FilmController();
+    InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+    FilmController filmController = new FilmController(filmStorage, new FilmService(filmStorage));
 
     @BeforeEach
-    public void BeforeEach() {
+    public void beforeEach() {
         film = new Film(1, "My film", "Descript",
-                LocalDate.of(2021, 1, 12), 20);
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
     }
 
     @Test
     public void twoFilmsInList() {
         filmController.postFilm(film);
         Film film2 = new Film(1, "My film", "Descript",
-                LocalDate.of(2021, 1, 12), 20);
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
         try {
             filmController.postFilm(film2);
             Assertions.assertEquals(2, filmController.getFilms().size());
@@ -48,36 +52,36 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void NoNameFilm() {
+    public void noNameFilm() {
         film.setName("");
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void MinusDurationFilm() {
+    public void minusDurationFilm() {
         film.setDuration(-5);
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void OldReleaseDate() {
+    public void oldReleaseDate() {
         film.setReleaseDate(LocalDate.of(1001, 1, 1));
         Assertions.assertThrows(ValidationException.class, () -> filmController.postFilm(film));
         Assertions.assertEquals(0, filmController.getFilms().size());
     }
 
     @Test
-    public void PutIncorrectFilm() {
+    public void putIncorrectFilm() {
         try {
             filmController.postFilm(film);
         } catch (ValidationException e) {
             throw new RuntimeException(e);
         }
         Film film2 = new Film(3, "My film12", "Descrip12t",
-                LocalDate.of(2021, 1, 12), 20);
-        Assertions.assertThrows(ValidationException.class, () -> filmController.putFilm(film2));
+                LocalDate.of(2021, 1, 12), 20, new HashSet<Integer>());
+        Assertions.assertThrows(NullPointerException.class, () -> filmController.putFilm(film2));
         Assertions.assertEquals(1, filmController.getFilms().size());
     }
 }
