@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.database.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,10 +13,10 @@ import java.util.Set;
 @Service
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserDbStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserDbStorage userStorage) {
         this.userStorage = userStorage;
     }
 

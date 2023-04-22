@@ -12,8 +12,8 @@ import java.util.Map;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private static final int MAX_LENGTH_DESCRIPTION = 200;
-    private static final LocalDate BIRTHDAY_FILM = LocalDate.of(1895, 12, 28);
+    public static final int MAX_LENGTH_DESCRIPTION = 200;
+    public static final LocalDate BIRTHDAY_FILM = LocalDate.of(1895, 12, 28);
     private Map<Integer, Film> films = new HashMap<>();
     private int id = 0;
 

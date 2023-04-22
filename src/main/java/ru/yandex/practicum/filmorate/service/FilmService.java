@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.database.FilmDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
-    private final FilmStorage filmStorage;
+    private final FilmDbStorage filmStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmDbStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
@@ -22,15 +22,15 @@ public class FilmService {
         if (filmStorage.getFilm(id) == null) {
             throw new NullPointerException("Такого фильма не существует");
         } else {
-            filmStorage.getFilm(id).addLikes(userId);
+            filmStorage.addLike(id, userId);
         }
     }
 
     public void deleteLike(int id, int userId) {
         if (filmStorage.getFilm(id) == null || !filmStorage.getFilm(id).getLikes().contains(userId)) {
-            throw new NullPointerException("Такого фильма или лайка не существует");
+            throw new NullPointerException("Такого фильма не существует");
         } else {
-            filmStorage.getFilm(id).deleteLikes(userId);
+            filmStorage.deleteLike(id, userId);
         }
     }
 
