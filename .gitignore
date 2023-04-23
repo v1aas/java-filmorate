@@ -44,5 +44,4 @@ build/
 ### VS Code ###
 .vscode/
 /.github/workflows/api-tests.yml
-/checkstyle.xml
 /db/
