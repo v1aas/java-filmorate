@@ -23,8 +23,6 @@ import static ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage.MAX_LENG
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
-    private Map<Integer, Film> films = new HashMap<>();
-    private int id = 0;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -34,13 +32,11 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getFilms() {
         HashMap<Integer, List<Genre>> genreMap = getGenreOnFilms();
         String sql = "select f.*,\n" +
-                "r.RATING_ID,\n" +
                 "rn.RATING_NAME,\n" +
                 "g.GENRE_ID,\n" +
                 "gn.GENRE_NAME\n" +
                 "from films f\n" +
-                "LEFT JOIN RATING r ON f.FILM_ID = r.FILM_ID\n" +
-                "LEFT JOIN RATING_NAME rn ON r.RATING_ID = rn.RATING_ID\n" +
+                "LEFT JOIN RATING_NAME rn ON f.RATING_ID = rn.RATING_ID\n" +
                 "LEFT JOIN GENRE g ON f.FILM_ID = g.FILM_ID\n" +
                 "LEFT JOIN GENRE_NAME gn ON g.GENRE_ID = gn.GENRE_ID;";
         return jdbcTemplate.query(sql, new RowMapper<Film>() {
@@ -67,18 +63,15 @@ public class FilmDbStorage implements FilmStorage {
     public Film getFilm(int id) {
         HashMap<Integer, List<Genre>> genres = getGenreOnFilms();
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select f.*,\n" +
-                "r.RATING_ID,\n" +
                 "rn.RATING_NAME,\n" +
                 "from films f\n" +
-                "LEFT JOIN RATING r ON f.FILM_ID = r.FILM_ID\n" +
-                "LEFT JOIN RATING_NAME rn ON r.RATING_ID = rn.RATING_ID\n" +
+                "LEFT JOIN RATING_NAME rn ON f.RATING_ID = rn.RATING_ID\n" +
                 "where f.film_id = ?;", id);
         if (filmRows.next()) {
             log.info("Фильм найден: {} {}", filmRows.getInt("film_id"),
                     filmRows.getString("film_name"));
             MPA mpa = new MPA(filmRows.getInt("rating_id"), filmRows.getString("rating_name"));
             TreeSet<Genre> setGenre = new TreeSet<>();
-            Set<Integer> likes = new HashSet<>(getLikes(id));
             if (genres.containsKey(filmRows.getInt("film_id"))) {
                 setGenre = new TreeSet<>(genres.get(filmRows.getInt("film_id")));
             }
@@ -90,7 +83,7 @@ public class FilmDbStorage implements FilmStorage {
                     filmRows.getDate("release_date").toLocalDate(),
                     filmRows.getInt("duration"),
                     mpa,
-                    likes,
+                    filmRows.getInt("rate"),
                     setGenre);
             return film;
         } else {
@@ -102,46 +95,41 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film createFilm(Film film) {
         validationFilm(film);
-        film.setId(++id);
-        String sqlFilms = "insert into films (film_name, DESCRIPTION, RELEASE_DATE, DURATION) " +
-                "values (?, ?, ?, ?)";
-        String sqlMPA = "insert into rating (film_id, rating_id) " +
-                "values (?, ?)";
+        String sqlFilms = "insert into films (film_name, DESCRIPTION, RELEASE_DATE, DURATION, rating_id, rate) " +
+                "values (?, ?, ?, ?, ?, ?)";
         String sqlGenre = "insert into genre (film_id, genre_id) " +
                 "values (?, ?)";
-        jdbcTemplate.update(sqlFilms,
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration());
+
+        jdbcTemplate.update(sqlFilms, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
+                film.getMpa().getId(),film.getRate());
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select film_id from films where film_name IN (?)",
                 film.getName());
+        int filmId = 0;
         if (filmRows.next()) {
-            int filmId = filmRows.getInt("film_id");
-            jdbcTemplate.update(sqlMPA, filmId, film.getMpa().getId());
+            filmId = filmRows.getInt("film_id");
         }
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(sqlGenre, id, genre.getId());
+                jdbcTemplate.update(sqlGenre, filmId, genre.getId());
             }
         }
-        films.put(id, film);
+        film.setId(filmId);
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
         validationFilm(film);
-        if (!films.containsKey(film.getId())) {
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select film_id from films where film_id = ?",
+                film.getId());
+        if (!filmRows.next()) {
             throw new NullPointerException("Такого фильма нет");
         }
-        String sqlFilms = "update films set " + "film_name = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? " +
-                "where film_id = ?";
-        String sqlMPA = "update rating set " + "rating_id = ? " +
+        String sqlFilms = "update films set " + "film_name = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, " +
+                "rating_id = ?" +
                 "where film_id = ?";
         jdbcTemplate.update(sqlFilms, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), film.getId());
-        jdbcTemplate.update(sqlMPA, film.getMpa().getId(), film.getId());
+                film.getDuration(), film.getMpa().getId(), film.getId());
         String sqlDeleteGenre = "DELETE FROM genre WHERE film_id = ?";
         jdbcTemplate.update(sqlDeleteGenre, film.getId());
         if (film.getGenres().size() > 0) {
@@ -199,25 +187,36 @@ public class FilmDbStorage implements FilmStorage {
         return genreFilms;
     }
 
-    public List<Integer> getLikes(int filmId) {
-        String sql = "select user_id from likes " +
+    public Integer getLikes(int filmId) {
+        String sql = "select rate from films " +
                 "where film_id = ?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("user_id"), filmId);
+        return jdbcTemplate.queryForObject(sql, Integer.class, filmId);
     }
 
     public int addLike(int filmId, int userId) {
-        String sql = "INSERT INTO LIKES (USER_ID,FILM_ID)" +
-                "VALUES (?, ?)";
+        String sql = "MERGE INTO LIKES (USER_ID, FILM_ID) KEY(USER_ID, FILM_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, filmId);
-        films.get(filmId).addLikes(userId);
-        return films.get(filmId).getLikes().size();
+        String sqlGetRate = "select rate from films " +
+                "where film_id = ?";
+        int rate = jdbcTemplate.queryForObject(sqlGetRate, int.class, filmId);
+        String sqlRate = "update films set "
+                + "rate = ? " +
+                "where film_id = ?";
+        jdbcTemplate.update(sqlRate, rate + 1, filmId);
+        return getFilm(filmId).getRate();
     }
 
     public Integer deleteLike(int filmId, int userId) {
         String sql = "DELETE FROM LIKES " +
                 "WHERE USER_ID = ? AND FILM_ID = ?";
         jdbcTemplate.update(sql, userId, filmId);
-        films.get(filmId).deleteLikes(userId);
-        return films.get(filmId).getLikes().size();
+        String sqlGetRate = "select rate from films " +
+                "where film_id = ?";
+        int rate = jdbcTemplate.queryForObject(sqlGetRate, int.class, filmId);
+        String sqlRate = "update films set "
+                + "rate = ? " +
+                "where film_id = ?";
+        jdbcTemplate.update(sqlRate, rate - 1, filmId);
+        return getFilm(filmId).getRate();
     }
 }

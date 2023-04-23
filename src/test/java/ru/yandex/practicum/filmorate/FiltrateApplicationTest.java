@@ -22,6 +22,7 @@ import java.util.*;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -66,7 +67,7 @@ class FilmorateApplicationTest {
         firstFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         firstFilm.setDuration(111);
         firstFilm.setMpa(new MPA(1, "G"));
-        firstFilm.setLikes(new HashSet<>());
+        firstFilm.setRate(0);
         firstFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(2, "Драма"),
                 new Genre(1, "Комедия"))));
 
@@ -76,7 +77,7 @@ class FilmorateApplicationTest {
         secondFilm.setReleaseDate(LocalDate.of(2000, 2, 10));
         secondFilm.setDuration(100);
         secondFilm.setMpa(new MPA(3, "PG-13"));
-        secondFilm.setLikes(new HashSet<>());
+        secondFilm.setRate(0);
         secondFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(6, "Боевик"))));
 
         thirdFilm = new Film();
@@ -85,7 +86,7 @@ class FilmorateApplicationTest {
         thirdFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         thirdFilm.setDuration(105);
         thirdFilm.setMpa(new MPA(4, "R"));
-        thirdFilm.setLikes(new HashSet<>());
+        thirdFilm.setRate(0);
         thirdFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(2, "Драма"))));
     }
 
@@ -172,8 +173,7 @@ class FilmorateApplicationTest {
         firstFilm = filmStorage.createFilm(firstFilm);
         filmService.addLike(firstFilm.getId(), firstUser.getId());
         firstFilm = filmStorage.getFilm(firstFilm.getId());
-        assertThat(firstFilm.getLikes()).hasSize(1);
-        assertThat(firstFilm.getLikes()).contains(firstUser.getId());
+        assertEquals(1, firstFilm.getRate());
     }
 
     @Test
@@ -185,8 +185,7 @@ class FilmorateApplicationTest {
         filmService.addLike(firstFilm.getId(), secondUser.getId());
         filmService.deleteLike(firstFilm.getId(), firstUser.getId());
         firstFilm = filmStorage.getFilm(firstFilm.getId());
-        assertThat(firstFilm.getLikes()).hasSize(1);
-        assertThat(firstFilm.getLikes()).contains(secondUser.getId());
+        assertEquals(1, firstFilm.getRate());
     }
 
     @Test

@@ -8,13 +8,14 @@ import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Set;
 
 @RestController
 public class UserController {
-    private final UserDbStorage userStorage;
+    private final UserStorage userStorage;
     private final UserService userService;
 
     @Autowired

@@ -23,18 +23,6 @@ public class Film {
     @JsonProperty("mpa")
     private MPA mpa;
     @JsonIgnore
-    private Set<Integer> likes = new HashSet<>();
+    private int rate;
     private TreeSet<Genre> genres = new TreeSet<>((o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
-
-    public void addLikes(int id) {
-        likes.add(id);
-    }
-
-    public void deleteLikes(int id) {
-        likes.remove(id);
-    }
-
-    public int getQuantityLikes() {
-        return likes.size();
-    }
 }

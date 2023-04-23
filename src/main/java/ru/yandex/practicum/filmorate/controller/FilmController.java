@@ -8,12 +8,13 @@ import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
 
 @RestController
 public class FilmController {
-    private FilmDbStorage filmStorage;
+    private FilmStorage filmStorage;
     private FilmService filmService;
 
     @Autowired
@@ -52,13 +53,13 @@ public class FilmController {
     @PutMapping("/films/{id}/like/{userId}")
     public int addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
-        return filmStorage.getFilm(id).getQuantityLikes();
+        return filmStorage.getFilm(id).getRate();
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
     public int deleteLike(@PathVariable int id, @PathVariable int userId) {
         filmService.deleteLike(id, userId);
-        return filmStorage.getFilm(id).getQuantityLikes();
+        return filmStorage.getFilm(id).getRate();
     }
 
     @ExceptionHandler

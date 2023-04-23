@@ -19,7 +19,7 @@ public class FilmService {
     }
 
     public void addLike(int id, int userId) {
-        if (filmStorage.getFilm(id) == null) {
+        if (filmStorage.getFilm(id) == null || userId < 0) {
             throw new NullPointerException("Такого фильма не существует");
         } else {
             filmStorage.addLike(id, userId);
@@ -27,7 +27,7 @@ public class FilmService {
     }
 
     public void deleteLike(int id, int userId) {
-        if (filmStorage.getFilm(id) == null || !filmStorage.getFilm(id).getLikes().contains(userId)) {
+        if (filmStorage.getFilm(id) == null || userId < 0) {
             throw new NullPointerException("Такого фильма не существует");
         } else {
             filmStorage.deleteLike(id, userId);
@@ -35,7 +35,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getQuantityLikes)
+        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getRate)
                 .thenComparing(Film::getId).reversed());
         popularFilms.addAll(filmStorage.getFilms());
         return new ArrayList<Film>(popularFilms.stream().limit(count).collect(Collectors.toList()));

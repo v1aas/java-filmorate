@@ -17,8 +17,6 @@ import java.util.*;
 
 @Component
 public class UserDbStorage implements UserStorage {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int id = 0;
     private final JdbcTemplate jdbcTemplate;
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
 
@@ -67,22 +65,23 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User createUser(User user) {
         validateUser(user);
-        user.setId(++id);
         String sql = "insert into users (email, login, user_name, birthday) " +
                 "values (?, ?, ?, ?)";
-        jdbcTemplate.update(sql,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday());
-        users.put(id, user);
+        jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select user_id from users where email IN (?)",
+                user.getEmail());
+        if (userRows.next()) {
+            user.setId(userRows.getInt("user_id"));
+        }
         return user;
     }
 
     @Override
     public User updateUsers(User user) {
         validateUser(user);
-        if (!users.containsKey(user.getId())) {
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select user_id from users where user_id = ?",
+                user.getId());
+        if (!userRows.next()) {
             throw new NullPointerException("Такого пользователя нет");
         }
         String sql = "update users set " + "email = ?, login = ?, user_name = ?, birthday = ? " +
@@ -98,11 +97,14 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int id, int friendId) {
-        if (!(users.containsKey(id) && users.containsKey(friendId))) {
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select user_id from users where user_id = ?", id);
+        SqlRowSet friendRows = jdbcTemplate.queryForRowSet("select user_id from users where user_id = ?",
+                friendId);
+        if (!(userRows.next() && friendRows.next())) {
             throw new ValidationException("Такого пользователя нет");
         }
-        User user = users.get(id);
-        User friend = users.get(friendId);
+        User user = getUser(id);
+        User friend = getUser(friendId);
         int status = 1;
         if (friend.getFriendList().contains(id)) {
             status = 2;
@@ -129,11 +131,14 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriend(int id, int friendId) {
-        if (!(users.containsKey(id) && users.containsKey(friendId))) {
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select user_id from users where user_id = ?", id);
+        SqlRowSet friendRows = jdbcTemplate.queryForRowSet("select user_id from users where user_id = ?",
+                friendId);
+        if (!(userRows.next() && friendRows.next())) {
             throw new ValidationException("Такого пользователя нет");
         }
-        User user = users.get(id);
-        User friend = users.get(friendId);
+        User user = getUser(id);
+        User friend = getUser(friendId);
         if (user.getFriendList().contains(friendId) && friend.getFriendList().contains(id)) {
             user.deleteFriend(friendId);
             String sqlUpdateFriendship = "UPDATE FRIENDSHIP SET STATUS_ID = 1" +

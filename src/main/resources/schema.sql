@@ -8,8 +8,6 @@ DROP TABLE IF EXISTS PUBLIC.GENRE_NAME CASCADE;
 
 DROP TABLE IF EXISTS PUBLIC.LIKES CASCADE;
 
-DROP TABLE IF EXISTS PUBLIC.RATING CASCADE;
-
 DROP TABLE IF EXISTS PUBLIC.RATING_NAME CASCADE;
 
 DROP TABLE IF EXISTS PUBLIC.STATUS CASCADE;
@@ -27,13 +25,10 @@ CREATE TABLE public.films (
 	description varchar NULL,
 	duration integer NOT NULL,
 	release_date timestamp NOT NULL,
-	CONSTRAINT films_pk PRIMARY KEY (film_id)
-);
-CREATE TABLE public.rating (
-	film_id integer NULL,
 	rating_id integer NULL,
-	CONSTRAINT rating_fk FOREIGN KEY (film_id) REFERENCES public.films(film_id),
-	CONSTRAINT rating_fk_1 FOREIGN KEY (rating_id) REFERENCES public.rating_name(rating_id)
+	rate integer NULL,
+	CONSTRAINT films_pk PRIMARY KEY (film_id),
+	CONSTRAINT films_fk FOREIGN KEY (RATING_ID) REFERENCES PUBLIC.RATING_NAME(RATING_ID)
 );
 CREATE TABLE public.genre_name (
 	genre_id integer NOT NULL,
