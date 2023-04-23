@@ -43,5 +43,4 @@ build/
 
 ### VS Code ###
 .vscode/
-/.github/workflows/api-tests.yml
 /db/
