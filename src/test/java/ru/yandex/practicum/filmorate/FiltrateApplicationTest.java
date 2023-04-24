@@ -159,8 +159,7 @@ class FilmorateApplicationTest {
         updateFilm.setDuration(133);
         updateFilm.setMpa(new MPA(1, "G"));
         Optional<Film> testUpdateFilm = Optional.ofNullable(filmStorage.updateFilm(updateFilm));
-        assertThat(testUpdateFilm)
-                .hasValueSatisfying(film ->
+        assertThat(testUpdateFilm).hasValueSatisfying(film ->
                         assertThat(film)
                                 .hasFieldOrPropertyWithValue("name", "Новый первый")
                                 .hasFieldOrPropertyWithValue("description", "Новое описание")
