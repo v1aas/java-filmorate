@@ -14,7 +14,10 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeSet;
 
 import static ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage.BIRTHDAY_FILM;
 import static ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage.MAX_LENGTH_DESCRIPTION;
@@ -101,7 +104,7 @@ public class FilmDbStorage implements FilmStorage {
                 "values (?, ?)";
 
         jdbcTemplate.update(sqlFilms, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
-                film.getMpa().getId(),film.getRate());
+                film.getMpa().getId(), film.getRate());
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select film_id from films where film_name IN (?)",
                 film.getName());
         int filmId = 0;

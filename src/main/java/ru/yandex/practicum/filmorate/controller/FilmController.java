@@ -14,8 +14,8 @@ import java.util.List;
 
 @RestController
 public class FilmController {
-    private FilmStorage filmStorage;
-    private FilmService filmService;
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     @Autowired
     public FilmController(FilmDbStorage filmStorage, FilmService filmService) {
