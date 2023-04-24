@@ -18,11 +18,13 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeSet;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -161,7 +163,8 @@ class FilmorateApplicationTest {
         Optional<Film> testUpdateFilm = Optional.ofNullable(filmStorage.updateFilm(updateFilm));
         assertThat(testUpdateFilm).
                 hasValueSatisfying(film ->
-                        assertThat(film).hasFieldOrPropertyWithValue("name", "Новый первый")
+                        assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "Новый первый")
                                 .hasFieldOrPropertyWithValue("description", "Новое описание")
                 );
     }
