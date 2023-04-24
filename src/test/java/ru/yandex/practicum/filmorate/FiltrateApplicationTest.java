@@ -161,8 +161,7 @@ class FilmorateApplicationTest {
         Optional<Film> testUpdateFilm = Optional.ofNullable(filmStorage.updateFilm(updateFilm));
         assertThat(testUpdateFilm).
                 hasValueSatisfying(film ->
-                        assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Новый первый")
+                        assertThat(film).hasFieldOrPropertyWithValue("name", "Новый первый")
                                 .hasFieldOrPropertyWithValue("description", "Новое описание")
                 );
     }
