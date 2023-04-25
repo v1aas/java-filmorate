@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.database;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -14,18 +13,16 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.time.LocalDate;
+import java.util.*;
 
-import static ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage.BIRTHDAY_FILM;
-import static ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage.MAX_LENGTH_DESCRIPTION;
 
+@Slf4j
 @Component
 public class FilmDbStorage implements FilmStorage {
+    public static final int MAX_LENGTH_DESCRIPTION = 200;
+    public static final LocalDate BIRTHDAY_FILM = LocalDate.of(1895, 12, 28);
     private final JdbcTemplate jdbcTemplate;
-    private final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -33,7 +30,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        HashMap<Integer, List<Genre>> genreMap = getGenreOnFilms();
+        HashMap<Integer, LinkedList<Genre>> genreMap = getGenreOnFilms();
         String sql = "select f.*,\n" +
                 "rn.RATING_NAME,\n" +
                 "g.GENRE_ID,\n" +
@@ -50,12 +47,13 @@ public class FilmDbStorage implements FilmStorage {
                 film.setDescription(rs.getString("DESCRIPTION"));
                 film.setReleaseDate(rs.getDate("release_date").toLocalDate());
                 film.setDuration(rs.getInt("duration"));
+                film.setRate(rs.getInt("rate"));
                 film.setMpa(new MPA(rs.getInt("rating_id"), rs.getString("rating_name")));
                 if (genreMap.containsKey(film.getId()) && genreMap != null) {
-                    TreeSet<Genre> genres = new TreeSet<>(genreMap.get(film.getId()));
+                    LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreMap.get(film.getId()));
                     film.setGenres(genres);
                 } else {
-                    film.setGenres(new TreeSet<>());
+                    film.setGenres(new LinkedHashSet<>());
                 }
                 return film;
             }
@@ -64,7 +62,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilm(int id) {
-        HashMap<Integer, List<Genre>> genres = getGenreOnFilms();
+        HashMap<Integer, LinkedList<Genre>> genres = getGenreOnFilms();
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("select f.*,\n" +
                 "rn.RATING_NAME,\n" +
                 "from films f\n" +
@@ -74,9 +72,9 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Фильм найден: {} {}", filmRows.getInt("film_id"),
                     filmRows.getString("film_name"));
             MPA mpa = new MPA(filmRows.getInt("rating_id"), filmRows.getString("rating_name"));
-            TreeSet<Genre> setGenre = new TreeSet<>();
+            LinkedHashSet<Genre> setGenre = new LinkedHashSet<Genre>();
             if (genres.containsKey(filmRows.getInt("film_id"))) {
-                setGenre = new TreeSet<>(genres.get(filmRows.getInt("film_id")));
+                setGenre.addAll(genres.get(filmRows.getInt("film_id")));
             }
 
             Film film = new Film(
@@ -161,7 +159,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private HashMap<Integer, List<Genre>> getGenreOnFilms() {
+    private HashMap<Integer, LinkedList<Genre>> getGenreOnFilms() {
         String sqlFilmsOnGenre = "select f.FILM_ID,\n" +
                 "g.GENRE_ID,\n" +
                 "gn.GENRE_NAME\n" +
@@ -169,7 +167,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN GENRE g ON f.FILM_ID = g.FILM_ID\n" +
                 "LEFT JOIN GENRE_NAME gn ON g.GENRE_ID = gn.GENRE_ID\n" +
                 "ORDER BY f.FILM_ID;";
-        HashMap<Integer, List<Genre>> genreFilms = new HashMap<>();
+        HashMap<Integer, LinkedList<Genre>> genreFilms = new HashMap<>();
         jdbcTemplate.query(sqlFilmsOnGenre, new RowMapper<Genre>() {
             public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
                 int filmId = rs.getInt("film_id");
@@ -180,7 +178,7 @@ public class FilmDbStorage implements FilmStorage {
                     genreFilms.get(filmId).add(new Genre(rs.getInt("genre_id"),
                             rs.getString("genre_name")));
                 } else {
-                    List<Genre> genres = new ArrayList<>();
+                    LinkedList<Genre> genres = new LinkedList<>();
                     genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
                     genreFilms.put(filmId, genres);
                 }
@@ -196,7 +194,16 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.queryForObject(sql, Integer.class, filmId);
     }
 
-    public int addLike(int filmId, int userId) {
+    public void addLike(int filmId, int userId) {
+        if (filmId < 0 || userId < 0) {
+            throw new NullPointerException("ID не может быть отрицательным");
+        }
+        SqlRowSet sqlGetLikes = jdbcTemplate.queryForRowSet("select * from likes where film_id = " + filmId);
+        if (sqlGetLikes.next()) {
+            if (sqlGetLikes.getInt("user_id") == userId) {
+                return;
+            }
+        }
         String sql = "MERGE INTO LIKES (USER_ID, FILM_ID) KEY(USER_ID, FILM_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, filmId);
         String sqlGetRate = "select rate from films " +
@@ -206,10 +213,18 @@ public class FilmDbStorage implements FilmStorage {
                 + "rate = ? " +
                 "where film_id = ?";
         jdbcTemplate.update(sqlRate, rate + 1, filmId);
-        return getFilm(filmId).getRate();
     }
 
-    public Integer deleteLike(int filmId, int userId) {
+    public void deleteLike(int filmId, int userId) {
+        if (filmId < 0 || userId < 0) {
+            throw new NullPointerException("ID не может быть отрицательным");
+        }
+        SqlRowSet sqlGetLikes = jdbcTemplate.queryForRowSet("select * from likes where film_id = " + filmId);
+        if (sqlGetLikes.next()) {
+            if (sqlGetLikes.getInt("user_id") != userId) {
+                return;
+            }
+        }
         String sql = "DELETE FROM LIKES " +
                 "WHERE USER_ID = ? AND FILM_ID = ?";
         jdbcTemplate.update(sql, userId, filmId);
@@ -220,6 +235,5 @@ public class FilmDbStorage implements FilmStorage {
                 + "rate = ? " +
                 "where film_id = ?";
         jdbcTemplate.update(sqlRate, rate - 1, filmId);
-        return getFilm(filmId).getRate();
     }
 }

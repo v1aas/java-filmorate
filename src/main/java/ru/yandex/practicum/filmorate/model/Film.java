@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.TreeSet;
+import java.util.LinkedHashSet;
 
 @Data
 @AllArgsConstructor
@@ -22,5 +22,5 @@ public class Film {
     private MPA mpa;
     @JsonIgnore
     private int rate;
-    private TreeSet<Genre> genres = new TreeSet<>((o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 }

@@ -18,10 +18,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,7 +67,7 @@ class FilmorateApplicationTest {
         firstFilm.setDuration(111);
         firstFilm.setMpa(new MPA(1, "G"));
         firstFilm.setRate(0);
-        firstFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(2, "Драма"),
+        firstFilm.setGenres(new LinkedHashSet<>(Arrays.asList(new Genre(2, "Драма"),
                 new Genre(1, "Комедия"))));
 
         secondFilm = new Film();
@@ -80,7 +77,7 @@ class FilmorateApplicationTest {
         secondFilm.setDuration(100);
         secondFilm.setMpa(new MPA(3, "PG-13"));
         secondFilm.setRate(0);
-        secondFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(6, "Боевик"))));
+        secondFilm.setGenres(new LinkedHashSet<>(Arrays.asList(new Genre(6, "Боевик"))));
 
         thirdFilm = new Film();
         thirdFilm.setName("Третий");
@@ -89,7 +86,7 @@ class FilmorateApplicationTest {
         thirdFilm.setDuration(105);
         thirdFilm.setMpa(new MPA(4, "R"));
         thirdFilm.setRate(0);
-        thirdFilm.setGenres(new TreeSet<>(Arrays.asList(new Genre(2, "Драма"))));
+        thirdFilm.setGenres(new LinkedHashSet<>(Arrays.asList(new Genre(2, "Драма"))));
     }
 
     @Test
@@ -216,12 +213,12 @@ class FilmorateApplicationTest {
         assertThat(Optional.of(listFilms.get(0)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Третий"));
+                                .hasFieldOrPropertyWithValue("name", "Второй"));
 
         assertThat(Optional.of(listFilms.get(1)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Второй"));
+                                .hasFieldOrPropertyWithValue("name", "Третий"));
 
         assertThat(Optional.of(listFilms.get(2)))
                 .hasValueSatisfying(film ->

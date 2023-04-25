@@ -7,15 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Genre implements Comparable<Genre> {
+public class Genre {
     private int id;
     private String name;
-
-    @Override
-    public int compareTo(Genre o) {
-        if (this.getId() == o.getId()) {
-            return 0;
-        }
-        return Integer.compare(this.getId(), o.getId());
-    }
 }

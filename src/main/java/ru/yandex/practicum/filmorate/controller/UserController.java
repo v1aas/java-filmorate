@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.database.UserDbStorage;
 import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -19,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @Autowired
-    public UserController(UserDbStorage userStorage, UserService userService) {
+    public UserController(UserStorage userStorage, UserService userService) {
         this.userStorage = userStorage;
         this.userService = userService;
     }

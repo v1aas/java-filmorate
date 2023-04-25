@@ -105,6 +105,12 @@ public class UserDbStorage implements UserStorage {
         if (!(userRows.next() && friendRows.next())) {
             throw new ValidationException("Такого пользователя нет");
         }
+        SqlRowSet usersRows = jdbcTemplate.queryForRowSet("select user_id, friend_id " +
+                "from friendship " +
+                "where user_id = " + id + " AND friend_id = " + friendId);
+        if (usersRows.next()) {
+            throw new ValidationException("Друзья уже добавлены");
+        }
         User user = getUser(id);
         User friend = getUser(friendId);
         int status = 1;
