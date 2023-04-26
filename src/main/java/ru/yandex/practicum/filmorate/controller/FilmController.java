@@ -3,22 +3,22 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.database.FilmDbStorage;
 import ru.yandex.practicum.filmorate.error.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.List;
 
 @RestController
 public class FilmController {
-    private FilmStorage filmStorage;
-    private FilmService filmService;
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     @Autowired
-    public FilmController(InMemoryFilmStorage filmStorage, FilmService filmService) {
+    public FilmController(FilmDbStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
     }
@@ -53,13 +53,13 @@ public class FilmController {
     @PutMapping("/films/{id}/like/{userId}")
     public int addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
-        return filmStorage.getFilm(id).getQuantityLikes();
+        return filmStorage.getFilm(id).getRate();
     }
 
     @DeleteMapping("/films/{id}/like/{userId}")
     public int deleteLike(@PathVariable int id, @PathVariable int userId) {
         filmService.deleteLike(id, userId);
-        return filmStorage.getFilm(id).getQuantityLikes();
+        return filmStorage.getFilm(id).getRate();
     }
 
     @ExceptionHandler

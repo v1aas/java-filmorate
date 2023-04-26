@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-
     private final FilmStorage filmStorage;
 
     @Autowired
@@ -22,20 +21,20 @@ public class FilmService {
         if (filmStorage.getFilm(id) == null) {
             throw new NullPointerException("Такого фильма не существует");
         } else {
-            filmStorage.getFilm(id).addLikes(userId);
+            filmStorage.addLike(id, userId);
         }
     }
 
     public void deleteLike(int id, int userId) {
-        if (filmStorage.getFilm(id) == null || !filmStorage.getFilm(id).getLikes().contains(userId)) {
-            throw new NullPointerException("Такого фильма или лайка не существует");
+        if (filmStorage.getFilm(id) == null) {
+            throw new NullPointerException("Такого фильма не существует");
         } else {
-            filmStorage.getFilm(id).deleteLikes(userId);
+            filmStorage.deleteLike(id, userId);
         }
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getQuantityLikes)
+        Set<Film> popularFilms = new TreeSet<>(Comparator.comparingInt(Film::getRate)
                 .thenComparing(Film::getId).reversed());
         popularFilms.addAll(filmStorage.getFilms());
         return new ArrayList<Film>(popularFilms.stream().limit(count).collect(Collectors.toList()));
